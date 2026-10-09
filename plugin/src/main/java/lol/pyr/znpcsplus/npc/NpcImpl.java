@@ -57,6 +57,13 @@ public class NpcImpl extends Viewable implements Npc {
         hologram = new HologramImpl(propertyRegistry, configManager, packetFactory, textSerializer, location.withY(location.getY() + type.getHologramOffset()));
     }
 
+    public World getBukkitWorld() {
+        World world = Bukkit.getWorld(worldName);
+        if (world != null) return world;
+        List<World> worlds = Bukkit.getWorlds();
+        return worlds.isEmpty() ? null : worlds.get(0);
+    }
+
     public void setType(NpcTypeImpl type) {
         UNSAFE_hideAll();
         this.type = type;

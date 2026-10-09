@@ -1,5 +1,6 @@
 package lol.pyr.znpcsplus.reflection.types;
 
+import com.google.common.collect.ImmutableList;
 import lol.pyr.znpcsplus.reflection.ReflectionLazyLoader;
 import lol.pyr.znpcsplus.reflection.ReflectionBuilder;
 
@@ -8,19 +9,22 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class FieldReflection extends ReflectionLazyLoader<Field> {
-    private final String fieldName;
+    private final ImmutableList<String> fieldNames;
     private final Class<?> expectType;
 
     public FieldReflection(ReflectionBuilder builder) {
         super(builder);
-        this.fieldName = builder.getFieldName();
+        this.fieldNames = builder.getFieldNames();
         this.expectType = builder.getExpectType();
     }
 
     protected Field load() {
-        if (fieldName != null && fieldName.length() > 0) for (Class<?> clazz : this.reflectionClasses) {
-            Field field = loadByName(clazz);
-            if (field != null) return field;
+        for (String name : fieldNames) {
+            if (name == null || name.isEmpty()) continue;
+            for (Class<?> clazz : this.reflectionClasses) {
+                Field field = loadByName(clazz, name);
+                if (field != null) return field;
+            }
         }
         if (expectType != null) for (Class<?> clazz : this.reflectionClasses) {
             Field field = loadByType(clazz);
@@ -29,9 +33,9 @@ public class FieldReflection extends ReflectionLazyLoader<Field> {
         return null;
     }
 
-    private Field loadByName(Class<?> clazz) {
+    private Field loadByName(Class<?> clazz, String name) {
         try {
-            Field field = clazz.getDeclaredField(fieldName);
+            Field field = clazz.getDeclaredField(name);
             if (expectType != null && !field.getType().equals(expectType)) return null;
             field.setAccessible(true);
             return field;
@@ -49,7 +53,7 @@ public class FieldReflection extends ReflectionLazyLoader<Field> {
 
     @Override
     protected void printDebugInfo(Consumer<String> logger) {
-        logger.accept("Field Name: " + fieldName);
+        logger.accept("Field Names: " + fieldNames);
         logger.accept("Field Type: " + expectType);
     }
 

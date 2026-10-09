@@ -12,7 +12,7 @@ runServer {
     javaLauncher = javaToolchains.launcherFor {
         languageVersion = JavaLanguageVersion.of(25)
     }
-    minecraftVersion "26.1.2"
+    minecraftVersion "26.2"
 }
 
 processResources {
@@ -23,7 +23,7 @@ dependencies {
     compileOnly "me.clip:placeholderapi:2.11.6" // Placeholder support
     implementation "com.google.code.gson:gson:2.10.1" // JSON parsing
     implementation "org.bstats:bstats-bukkit:3.0.2" // Plugin stats
-    implementation "com.github.retrooper:packetevents-spigot:2.12.1" // Packets
+    implementation "com.github.retrooper:packetevents-spigot:2.13.0" // Packets
     implementation "space.arim.dazzleconf:dazzleconf-ext-snakeyaml:1.2.1" // Configs
     implementation "lol.pyr:director-adventure:2.1.2" // Commands
 

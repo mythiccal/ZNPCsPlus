@@ -11,7 +11,7 @@ import java.util.ArrayList;
 
 public class ReflectionBuilder {
     private final String reflectionPackage;
-    private String fieldName;
+    private final ArrayList<String> fieldNames = new ArrayList<>();
     private String additionalData;
     private final ArrayList<String> className = new ArrayList<>();
     private final ArrayList<String> methods = new ArrayList<>();
@@ -34,7 +34,7 @@ public class ReflectionBuilder {
 
     protected ReflectionBuilder(String reflectionPackage, String fieldName, String additionalData, Class<?> expectType) {
         this.reflectionPackage = reflectionPackage;
-        this.fieldName = fieldName;
+        if (fieldName != null && !fieldName.isEmpty()) this.fieldNames.add(fieldName);
         this.additionalData = additionalData;
         this.expectType = expectType;
     }
@@ -60,7 +60,7 @@ public class ReflectionBuilder {
     }
 
     public ReflectionBuilder withFieldName(String fieldName) {
-        this.fieldName = fieldName;
+        this.fieldNames.add(fieldName);
         return this;
     }
 
@@ -109,7 +109,11 @@ public class ReflectionBuilder {
     }
 
     public String getFieldName() {
-        return fieldName;
+        return fieldNames.isEmpty() ? null : fieldNames.get(fieldNames.size() - 1);
+    }
+
+    public ImmutableList<String> getFieldNames() {
+        return ImmutableList.copyOf(fieldNames);
     }
 
     public MethodReflection toMethodReflection() {

@@ -34,6 +34,7 @@ public final class Reflections {
     public static final Class<?> ENTITY_HUMAN_CLASS =
             new ReflectionBuilder(ReflectionPackage.ENTITY)
                     .withSubClass("player")
+                    .withClassName("Player")
                     .withClassName("EntityHuman")
                     .toClassReflection().get();
 
@@ -135,6 +136,8 @@ public final class Reflections {
     public static final ReflectionLazyLoader<AtomicInteger> ATOMIC_ENTITY_ID_FIELD =
             new ReflectionBuilder(ReflectionPackage.ENTITY)
                     .withClassName(ENTITY_CLASS)
+                    .withFieldName("ENTITY_ID_COUNTER")
+                    .withFieldName("ENTITY_COUNTER")
                     .withFieldName("entityCount")
                     .withFieldName("d")
                     .withFieldName("c")
