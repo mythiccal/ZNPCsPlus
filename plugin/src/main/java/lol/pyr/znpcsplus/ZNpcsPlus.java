@@ -2,9 +2,9 @@ package lol.pyr.znpcsplus;
 
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.PacketEventsAPI;
+import com.github.retrooper.packetevents.event.PacketListenerCommon;
 import com.github.retrooper.packetevents.event.PacketListenerPriority;
 import com.github.retrooper.packetevents.manager.server.ServerVersion;
-import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import lol.pyr.director.adventure.command.CommandContext;
 import lol.pyr.director.adventure.command.CommandManager;
 import lol.pyr.director.adventure.command.MultiCommand;
@@ -76,6 +76,7 @@ public class ZNpcsPlus {
             .hexColors().build();
 
     private final List<Runnable> shutdownTasks = new ArrayList<>();
+    private final List<PacketListenerCommon> packetListeners = new ArrayList<>();
     private final PacketEventsAPI<Plugin> packetEvents;
     private final ZNpcsPlusBootstrap bootstrap;
 
@@ -85,10 +86,10 @@ public class ZNpcsPlus {
 
     public ZNpcsPlus(ZNpcsPlusBootstrap bootstrap) {
         this.bootstrap = bootstrap;
-        packetEvents = SpigotPacketEventsBuilder.build(bootstrap);
-        PacketEvents.setAPI(packetEvents);
-        packetEvents.getSettings().checkForUpdates(false);
-        packetEvents.load();
+        packetEvents = packetEventsApi();
+        if (packetEvents == null) {
+            throw new IllegalStateException("PacketEvents is not loaded. Install the PacketEvents plugin.");
+        }
 
         configManager = new ConfigManager(getDataFolder());
         skinCache = new MojangSkinCache(configManager, new File(getDataFolder(), "skins"));
@@ -112,10 +113,6 @@ public class ZNpcsPlus {
 
         PluginManager pluginManager = Bukkit.getPluginManager();
         long before = System.currentTimeMillis();
-
-        log(ChatColor.WHITE + " * Initializing libraries...");
-
-        packetEvents.init();
 
         BukkitAudiences adventure = BukkitAudiences.create(bootstrap);
         shutdownTasks.add(adventure::close);
@@ -152,8 +149,8 @@ public class ZNpcsPlus {
 
         typeRegistry.registerDefault(packetEvents, propertyRegistry);
         actionRegistry.registerTypes(scheduler, adventure, textSerializer, bungeeConnector);
-        packetEvents.getEventManager().registerListener(new InteractionPacketListener(userManager, npcRegistry, typeRegistry, scheduler), PacketListenerPriority.MONITOR);
-        packetEvents.getEventManager().registerListener(new ClientPacketListener(configManager), PacketListenerPriority.LOWEST);
+        packetListeners.add(packetEvents.getEventManager().registerListener(new InteractionPacketListener(userManager, npcRegistry, typeRegistry, scheduler), PacketListenerPriority.MONITOR));
+        packetListeners.add(packetEvents.getEventManager().registerListener(new ClientPacketListener(configManager), PacketListenerPriority.LOWEST));
         new Metrics(bootstrap, 18244);
         pluginManager.registerEvents(new UserListener(userManager), bootstrap);
 
@@ -222,7 +219,15 @@ public class ZNpcsPlus {
             throwable.printStackTrace();
         }
         shutdownTasks.clear();
-        PacketEvents.getAPI().terminate();
+        for (PacketListenerCommon listener : packetListeners) {
+            packetEvents.getEventManager().unregisterListener(listener);
+        }
+        packetListeners.clear();
+    }
+
+    @SuppressWarnings("unchecked")
+    private static PacketEventsAPI<Plugin> packetEventsApi() {
+        return (PacketEventsAPI<Plugin>) PacketEvents.getAPI();
     }
 
     private PacketFactory setupPacketFactory(TaskScheduler scheduler, EntityPropertyRegistryImpl propertyRegistry, ConfigManager configManager) {
