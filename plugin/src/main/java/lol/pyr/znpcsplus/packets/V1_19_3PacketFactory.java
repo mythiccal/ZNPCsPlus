@@ -11,6 +11,7 @@ import lol.pyr.znpcsplus.config.ConfigManager;
 import lol.pyr.znpcsplus.entity.EntityPropertyRegistryImpl;
 import lol.pyr.znpcsplus.entity.PacketEntity;
 import lol.pyr.znpcsplus.scheduling.TaskScheduler;
+import lol.pyr.znpcsplus.util.PacketEventsAdventure;
 import lol.pyr.znpcsplus.util.PapiUtil;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
@@ -39,9 +40,8 @@ public class V1_19_3PacketFactory extends V1_17PacketFactory {
                 ));
         boolean listed = alwaysVisibleInTabProperty == null || properties.getProperty(alwaysVisibleInTabProperty.get());
         skinned(player, properties, new UserProfile(entity.getUuid(), Integer.toString(entity.getEntityId()))).thenAccept(profile -> {
-            WrapperPlayServerPlayerInfoUpdate.PlayerInfo info = new WrapperPlayServerPlayerInfoUpdate.PlayerInfo(
-                    profile, listed, 1, GameMode.CREATIVE,
-                    displayName, null);
+            WrapperPlayServerPlayerInfoUpdate.PlayerInfo info = PacketEventsAdventure.playerInfo(
+                    profile, listed, 1, GameMode.CREATIVE, displayName);
             sendPacket(player, new WrapperPlayServerPlayerInfoUpdate(EnumSet.of(WrapperPlayServerPlayerInfoUpdate.Action.ADD_PLAYER,
                     WrapperPlayServerPlayerInfoUpdate.Action.UPDATE_LISTED, WrapperPlayServerPlayerInfoUpdate.Action.UPDATE_DISPLAY_NAME),
                     info, info, info));
@@ -63,8 +63,8 @@ public class V1_19_3PacketFactory extends V1_17PacketFactory {
     public void updateListed(Player player, PacketEntity entity, boolean listed) {
         if (entity.getType() != EntityTypes.PLAYER) return;
         sendPacket(player, new WrapperPlayServerPlayerInfoUpdate(WrapperPlayServerPlayerInfoUpdate.Action.UPDATE_LISTED,
-                new WrapperPlayServerPlayerInfoUpdate.PlayerInfo(new UserProfile(entity.getUuid(), null),
-                        listed, 1, GameMode.CREATIVE, null, null))
+                PacketEventsAdventure.playerInfo(new UserProfile(entity.getUuid(), null),
+                        listed, 1, GameMode.CREATIVE, null))
         );
         entity.setListedInTabList(listed);
     }
@@ -73,8 +73,8 @@ public class V1_19_3PacketFactory extends V1_17PacketFactory {
     public void updateDisplayName(Player player, PacketEntity entity, Component displayName) {
         if (entity.getType() != EntityTypes.PLAYER) return;
         sendPacket(player, new WrapperPlayServerPlayerInfoUpdate(WrapperPlayServerPlayerInfoUpdate.Action.UPDATE_DISPLAY_NAME,
-                new WrapperPlayServerPlayerInfoUpdate.PlayerInfo(new UserProfile(entity.getUuid(), null),
-                        entity.isListedInTabList(), 1, GameMode.CREATIVE, displayName, null))
+                PacketEventsAdventure.playerInfo(new UserProfile(entity.getUuid(), null),
+                        entity.isListedInTabList(), 1, GameMode.CREATIVE, displayName))
         );
     }
 }

@@ -2,16 +2,15 @@ package lol.pyr.znpcsplus.entity.properties;
 
 import com.github.retrooper.packetevents.protocol.entity.data.EntityData;
 import com.github.retrooper.packetevents.protocol.entity.data.EntityDataTypes;
-import com.github.retrooper.packetevents.util.adventure.AdventureSerializer;
 import lol.pyr.znpcsplus.entity.EntityPropertyImpl;
 import lol.pyr.znpcsplus.entity.PacketEntity;
+import lol.pyr.znpcsplus.util.PacketEventsAdventure;
 import lol.pyr.znpcsplus.util.PapiUtil;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.entity.Player;
 
 import java.util.Map;
-import java.util.Optional;
 
 public class NameProperty extends EntityPropertyImpl<Component> {
     private final LegacyComponentSerializer legacySerializer;
@@ -32,9 +31,9 @@ public class NameProperty extends EntityPropertyImpl<Component> {
         if (value != null) {
             value = PapiUtil.set(legacySerializer, player, value);
             if (legacySerialization) {
-                properties.put(2, newEntityData(2, EntityDataTypes.STRING, AdventureSerializer.serializer().asJson(value)));
+                properties.put(2, newEntityData(2, EntityDataTypes.STRING, PacketEventsAdventure.json(value)));
             } else if (optional) {
-                properties.put(2, newEntityData(2, EntityDataTypes.OPTIONAL_ADV_COMPONENT, Optional.of(value)));
+                properties.put(2, PacketEventsAdventure.optionalComponent(2, value));
             } else {
                 properties.put(2, newEntityData(2, EntityDataTypes.STRING, LegacyComponentSerializer.legacySection().serialize(value)));
             }

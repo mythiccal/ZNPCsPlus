@@ -24,9 +24,9 @@ import lol.pyr.znpcsplus.skin.BaseSkinDescriptor;
 import lol.pyr.znpcsplus.util.LazyLoader;
 import lol.pyr.znpcsplus.util.NamedColor;
 import lol.pyr.znpcsplus.util.NpcLocation;
+import lol.pyr.znpcsplus.util.PacketEventsAdventure;
 import lol.pyr.znpcsplus.util.PapiUtil;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -120,8 +120,7 @@ public class V1_8PacketFactory implements PacketFactory {
                 ));
         skinned(player, properties, new UserProfile(entity.getUuid(), Integer.toString(entity.getEntityId()))).thenAccept(profile -> {
             sendPacket(player, new WrapperPlayServerPlayerInfo(
-                    WrapperPlayServerPlayerInfo.Action.ADD_PLAYER, new WrapperPlayServerPlayerInfo.PlayerData(
-                            displayName, profile, GameMode.CREATIVE, 1)));
+                    WrapperPlayServerPlayerInfo.Action.ADD_PLAYER, PacketEventsAdventure.legacyPlayerData(displayName, profile, GameMode.CREATIVE, 1)));
             entity.setListedInTabList(true);
             future.complete(null);
         });
@@ -133,18 +132,18 @@ public class V1_8PacketFactory implements PacketFactory {
         if (entity.getType() != EntityTypes.PLAYER) return;
         if (!entity.isListedInTabList()) return; // Already removed
         sendPacket(player, new WrapperPlayServerPlayerInfo(
-                WrapperPlayServerPlayerInfo.Action.REMOVE_PLAYER, new WrapperPlayServerPlayerInfo.PlayerData(null,
+                WrapperPlayServerPlayerInfo.Action.REMOVE_PLAYER, PacketEventsAdventure.legacyPlayerData(null,
                 new UserProfile(entity.getUuid(), null), null, -1)));
         entity.setListedInTabList(false);
     }
 
     @Override
     public void createTeam(Player player, PacketEntity entity, NamedColor namedColor) {
-        sendPacket(player, new WrapperPlayServerTeams("npc_team_" + entity.getEntityId(), WrapperPlayServerTeams.TeamMode.CREATE, new WrapperPlayServerTeams.ScoreBoardTeamInfo(
+        sendPacket(player, new WrapperPlayServerTeams("npc_team_" + entity.getEntityId(), WrapperPlayServerTeams.TeamMode.CREATE, PacketEventsAdventure.team(
                 Component.text(" "), null, null,
                 WrapperPlayServerTeams.NameTagVisibility.NEVER,
                 WrapperPlayServerTeams.CollisionRule.NEVER,
-                namedColor == null ? NamedTextColor.WHITE : NamedTextColor.NAMES.value(namedColor.name().toLowerCase()),
+                namedColor == null ? null : namedColor.name().toLowerCase(),
                 WrapperPlayServerTeams.OptionData.NONE
         )));
         sendPacket(player, new WrapperPlayServerTeams("npc_team_" + entity.getEntityId(), WrapperPlayServerTeams.TeamMode.ADD_ENTITIES, (WrapperPlayServerTeams.ScoreBoardTeamInfo) null,
@@ -243,10 +242,8 @@ public class V1_8PacketFactory implements PacketFactory {
     public void updateDisplayName(Player player, PacketEntity entity, Component displayName) {
         if (entity.getType() != EntityTypes.PLAYER) return;
         sendPacket(player, new WrapperPlayServerPlayerInfo(
-                WrapperPlayServerPlayerInfo.Action.UPDATE_DISPLAY_NAME, new WrapperPlayServerPlayerInfo.PlayerData(
-                    displayName,
-                    new UserProfile(entity.getUuid(), null), null, -1
-                )
+                WrapperPlayServerPlayerInfo.Action.UPDATE_DISPLAY_NAME, PacketEventsAdventure.legacyPlayerData(
+                    displayName, new UserProfile(entity.getUuid(), null), null, -1)
         ));
     }
 }

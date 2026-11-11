@@ -2,16 +2,15 @@ package lol.pyr.znpcsplus.entity.properties;
 
 import com.github.retrooper.packetevents.protocol.entity.data.EntityData;
 import com.github.retrooper.packetevents.protocol.entity.data.EntityDataTypes;
-import com.github.retrooper.packetevents.util.adventure.AdventureSerializer;
 import lol.pyr.znpcsplus.entity.EntityPropertyImpl;
 import lol.pyr.znpcsplus.entity.PacketEntity;
+import lol.pyr.znpcsplus.util.PacketEventsAdventure;
 import lol.pyr.znpcsplus.util.RabbitType;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.entity.Player;
 
 import java.util.Map;
-import java.util.Optional;
 
 public class RabbitTypeProperty extends EntityPropertyImpl<RabbitType> {
     private final int index;
@@ -25,8 +24,7 @@ public class RabbitTypeProperty extends EntityPropertyImpl<RabbitType> {
         this.legacyBooleans = legacyBooleans;
         this.optional = optional;
         Component name = Component.text("Toast");
-        this.serialized = legacyNames ? AdventureSerializer.serializer().legacy().serialize(name) :
-                optional ? name : LegacyComponentSerializer.legacySection().serialize(name);
+        this.serialized = legacyNames || !optional ? LegacyComponentSerializer.legacySection().serialize(name) : name;
     }
 
     @Override
@@ -38,13 +36,13 @@ public class RabbitTypeProperty extends EntityPropertyImpl<RabbitType> {
                     newEntityData(index, EntityDataTypes.BYTE, (byte) rabbitType.getId()) :
                     newEntityData(index, EntityDataTypes.INT, rabbitType.getId()));
             if (optional) {
-                properties.put(2, new EntityData<>(2, EntityDataTypes.OPTIONAL_ADV_COMPONENT, Optional.empty()));
+                properties.put(2, PacketEventsAdventure.optionalComponent(2, null));
             } else {
                 properties.put(2, new EntityData<>(2, EntityDataTypes.STRING, ""));
             }
         } else {
             if (optional) {
-                properties.put(2, newEntityData(2, EntityDataTypes.OPTIONAL_ADV_COMPONENT, Optional.of((Component) serialized)));
+                properties.put(2, PacketEventsAdventure.optionalComponent(2, (Component) serialized));
             } else {
                 properties.put(2, newEntityData(2, EntityDataTypes.STRING, (String) serialized));
             }
